@@ -12,7 +12,7 @@ a. Juniper
 
 b. Juniper
 
-c. Sanjay
+c. Sanjay Chaudhary
 
 d. James
 
