@@ -8,14 +8,14 @@ To edit the application interface, open the `app.mlapp` file in the MATLAB edito
 
 Each project part will be assigned to the following people:
 
-a. Juniper
+a. Sanjay (complete)
 
 b. Juniper
 
-c. Sanjay Chaudhary
+c. Sanjay
 
-d. James
+d. Alex
 
-e. James/Alex
+e. James
 
-f. Alex
+f. Juniper
