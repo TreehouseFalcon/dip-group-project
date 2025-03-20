@@ -6,9 +6,16 @@ To edit the application interface, open the `app.mlapp` file in the MATLAB edito
 
 ## Delegations
 
-A) Juniper
-B) Juniper
-C) Sanjay
-D) James
-E) James/Alex
-F) Alex
+Each project part will be assigned to the following people:
+
+a. Juniper
+
+b. Juniper
+
+c. Sanjay
+
+d. James
+
+e. James/Alex
+
+f. Alex
