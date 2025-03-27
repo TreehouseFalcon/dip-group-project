@@ -41,19 +41,42 @@ function processImage(fig)
     % Convert to grayscale and detect edges
     grayImg = rgb2gray(img);
     edges = edge(grayImg, 'Canny');
+
+    
+    % Set edges to zero
+    edges(1:2,:) = 0;
+    edges(end-1:end,:) = 0;
+    edges(:,1:2) = 0;
+    edges(:,end-1:end) = 0;
+
+    % Close gaps as much as possible
+    edges = imclose(edges, strel("disk", 20));
+    edges = imfill(edges, "holes");
+    edges = edge(edges, 'Canny');
+
     
     % Extract boundary points
     [y, x] = find(edges);
     complexPoints = x + 1i * y;
-    
+
+    % Sort edge pixels by finding center of mass, and sorting on angle from
+    % center of mass
+    center = mean(complexPoints);
+    complexAngles = angle(complexPoints - center);
+    [~,sortedIndices] = sort(complexAngles);
+    complexPoints = complexPoints(sortedIndices);
+
     % Compute Fourier Descriptor
     FD = fft(complexPoints);
     
     % Retain Percentage of Coefficients
     slider = getappdata(fig, 'SliderHandle');
     retainPercent = round(slider.Value);
-    numCoeffs = round(length(FD) * retainPercent / 100);
-    FD(numCoeffs+1:end) = 0;
+    numCoeffs = round(length(FD)* (retainPercent / 100));
+    FD = fftshift(FD);
+    FD(1:ceil((length(FD)-numCoeffs)/2)) = 0;
+    FD(length(FD)-floor((length(FD)-numCoeffs)/2):end) = 0;
+    FD = ifftshift(FD);
     
     % Reconstruct boundary
     reconPoints = ifft(FD);
