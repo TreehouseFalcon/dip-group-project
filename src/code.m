@@ -9,8 +9,12 @@ function fourier_shape_descriptor()
     btnProcess = uibutton(fig, 'Text', 'Process Image', 'Position', [140 350 100 30], 'ButtonPushedFcn', @(btn,event) processImage(fig));
     
     % Percentage Slider
-    lbl = uilabel(fig, 'Text', 'Retain %:', 'Position', [260 355 60 20]);
-    slider = uislider(fig, 'Position', [320 360 150 3], 'Limits', [1 100]);
+    percentLabel = uilabel(fig, 'Text', 'Retain %:', 'Position', [260 355 60 20]);
+    percentInput = uieditfield(fig, 'numeric', 'Position', [320 355 30 22], ...
+    'Value', 50, ... % Default value
+    'Limits', [1 100], ... 
+    'RoundFractionalValues', 'on');
+    percentInput.ValueChangedFcn = @(src,event) processImage(fig);
     
     % Save Button
     btnSave = uibutton(fig, 'Text', 'Save Descriptor', 'Position', [480 350 100 30], 'ButtonPushedFcn', @(btn,event) saveDescriptor());
@@ -18,7 +22,7 @@ function fourier_shape_descriptor()
     % Axes for Image Display
     ax = uiaxes(fig, 'Position', [50 50 500 280]);
     setappdata(fig, 'AxesHandle', ax);
-    setappdata(fig, 'SliderHandle', slider);
+    setappdata(fig, 'Percentage', percentInput);
 end
 
 function loadImage(fig)
@@ -54,7 +58,6 @@ function processImage(fig)
     edges = imfill(edges, "holes");
     edges = edge(edges, 'Canny');
 
-    
     % Extract boundary points
     [y, x] = find(edges);
     complexPoints = x + 1i * y;
@@ -70,8 +73,8 @@ function processImage(fig)
     FD = fft(complexPoints);
     
     % Retain Percentage of Coefficients
-    slider = getappdata(fig, 'SliderHandle');
-    retainPercent = round(slider.Value);
+    pInput = getappdata(fig, 'Percentage');
+    retainPercent = pInput.Value;
     numCoeffs = round(length(FD)* (retainPercent / 100));
     FD = fftshift(FD);
     FD(1:ceil((length(FD)-numCoeffs)/2)) = 0;
