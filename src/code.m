@@ -95,18 +95,24 @@ function processImage(fig)
 end
 
 function saveDescriptor(fig)
-    matPath = "descriptor.mat";
-    jpgPath = "descriptor.jpg";
-
     FD = getappdata(fig, 'FourierDescriptor');
     if isempty(FD)
         uialert(fig, 'No descriptor to save!', 'Error');
         return;
     end
+
+    exportgraphics(fig, "../descriptor.jpg");
+
+    selectedSaveRawDataOption = uiconfirm(fig, ...
+        "Save raw descriptor data?", ...
+        "Export Raw Data", ...
+        "Options",["Save", "Don't Save"] ...
+    );
+    if selectedSaveRawDataOption ~= "Save"
+        return;
+    end
     
-    imwrite(FD, "descriptor.jpg");
-    
-    [file, path] = uiputfile('descriptor.mat', 'Save Fourier Descriptor');
+    [file, path] = uiputfile('../descriptor.mat', 'Save Fourier Descriptor');
     if file
         save(fullfile(path, file), 'FD');
     end
