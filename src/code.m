@@ -3,21 +3,21 @@ function fourier_shape_descriptor()
     fig = uifigure('Name', 'Fourier Shape Descriptor', 'Position', [100 100 600 400]);
     
     % Load Image Button
-    btnLoad = uibutton(fig, 'Text', 'Load Image', 'Position', [20 350 100 30], 'ButtonPushedFcn', @(btn,event) loadImage(fig));
+    uibutton(fig, 'Text', 'Load Image', 'Position', [20 350 100 30], 'ButtonPushedFcn', @(btn,event) loadImage(fig));
     
     % Process Button
-    btnProcess = uibutton(fig, 'Text', 'Process Image', 'Position', [140 350 100 30], 'ButtonPushedFcn', @(btn,event) processImage(fig));
+    uibutton(fig, 'Text', 'Process Image', 'Position', [140 350 100 30], 'ButtonPushedFcn', @(btn,event) processImage(fig));
     
     % Percentage Slider
-    percentLabel = uilabel(fig, 'Text', 'Retain %:', 'Position', [260 355 60 20]);
+    uilabel(fig, 'Text', 'Retain %:', 'Position', [260 355 60 20]);
     percentInput = uieditfield(fig, 'numeric', 'Position', [320 355 30 22], ...
-    'Value', 50, ... % Default value
+    'Value', 30, ... % Default value
     'Limits', [1 100], ... 
     'RoundFractionalValues', 'on');
     percentInput.ValueChangedFcn = @(src,event) processImage(fig);
     
     % Save Button
-    btnSave = uibutton(fig, 'Text', 'Save Descriptor', 'Position', [480 350 100 30], 'ButtonPushedFcn', @(btn,event) saveDescriptor());
+    uibutton(fig, 'Text', 'Save Descriptor', 'Position', [480 350 100 30], 'ButtonPushedFcn', @(btn,event) saveDescriptor(fig));
     
     % Axes for Image Display
     ax = uiaxes(fig, 'Position', [50 50 500 280]);
@@ -94,10 +94,17 @@ function processImage(fig)
     setappdata(fig, 'FourierDescriptor', FD);
 end
 
-function saveDescriptor()
-    FD = getappdata(gcf, 'FourierDescriptor');
+function saveDescriptor(fig)
+    outDir = "out";
+    matPath = "descriptor.mat";
+    jpgPath = "descriptor.jpg";
+
+    mkdir(outDir)
+
+    
+    FD = getappdata(fig, 'FourierDescriptor');
     if isempty(FD)
-        uialert(gcf, 'No descriptor to save!', 'Error');
+        uialert(fig, 'No descriptor to save!', 'Error');
         return;
     end
     
