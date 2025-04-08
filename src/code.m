@@ -95,18 +95,16 @@ function processImage(fig)
 end
 
 function saveDescriptor(fig)
-    outDir = "out";
     matPath = "descriptor.mat";
     jpgPath = "descriptor.jpg";
 
-    mkdir(outDir)
-
-    
     FD = getappdata(fig, 'FourierDescriptor');
     if isempty(FD)
         uialert(fig, 'No descriptor to save!', 'Error');
         return;
     end
+    
+    imwrite(FD, "descriptor.jpg");
     
     [file, path] = uiputfile('descriptor.mat', 'Save Fourier Descriptor');
     if file
