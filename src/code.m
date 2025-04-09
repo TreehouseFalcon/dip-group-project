@@ -35,6 +35,37 @@ function loadImage(fig)
     end
 end
 
+
+
+function sortedPoints = sortPoints(complexPoints)
+    threshold = 4;
+    toBeSorted = complexPoints;
+    sortedPoints = [];
+    
+
+    while size(toBeSorted) ~= 0
+        [~,sortedIndices] = sort(abs(toBeSorted - toBeSorted(1)));
+        toBeSorted = toBeSorted(sortedIndices);
+
+        if size(toBeSorted) <= 1
+            sortedPoints = [sortedPoints; toBeSorted(1)];
+            break
+        end
+
+
+        connectedPath = [toBeSorted(1)];
+        consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
+        toBeSorted(1) = [];
+        while consecutiveDistance < threshold & size(toBeSorted) > 1
+            connectedPath = [connectedPath; toBeSorted(1)];
+            consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
+            toBeSorted(1) = [];
+        end
+        sortedPoints = [sortedPoints; connectedPath];
+    end
+
+end
+
 function processImage(fig)
     img = getappdata(fig, 'ImageData');
     if isempty(img)
@@ -64,10 +95,7 @@ function processImage(fig)
 
     % Sort edge pixels by finding center of mass, and sorting on angle from
     % center of mass
-    center = mean(complexPoints);
-    complexAngles = angle(complexPoints - center);
-    [~,sortedIndices] = sort(complexAngles);
-    complexPoints = complexPoints(sortedIndices);
+    complexPoints = sortPoints(complexPoints);
 
     % Compute Fourier Descriptor
     FD = fft(complexPoints);
