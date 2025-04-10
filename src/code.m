@@ -40,6 +40,7 @@ function sortedPoints = sortPoints(complexPoints)
     % Configuration parameters. Should probably be fine left as is.
     distanceThreshold = 2;
     angleThreshold = pi;
+    closeLoops = false;
 
     toBeSorted = complexPoints;
     sortedPoints = {};
@@ -90,11 +91,11 @@ function sortedPoints = sortPoints(complexPoints)
         previousPaths = cat(2,currentPath{1:end-2});
         lastPointInPath = currentSegment(end);
 
-        if any(abs(previousSegments - lastPointInPath) < distanceThreshold)
+        if closeLoops & any(abs(previousSegments - lastPointInPath) < distanceThreshold)
             index = find(abs(previousSegments - lastPointInPath) < distanceThreshold);
             index = index(1);
             currentPath = [currentPath, previousSegments(index)];
-        elseif any(abs(previousPaths - lastPointInPath) < distanceThreshold)
+        elseif closeLoops & any(abs(previousPaths - lastPointInPath) < distanceThreshold)
             index = find(abs(previousPaths - lastPointInPath) < distanceThreshold);
             index = index(1);
             currentPath = [currentPath, previousPaths(index)];
@@ -106,7 +107,8 @@ function sortedPoints = sortPoints(complexPoints)
             toBeSorted(1) = [];
         end
 
-        sortedPoints = [sortedPoints, cat(2,currentPath{:})];
+        currentPath = cat(2,currentPath{:});
+        sortedPoints = [sortedPoints, currentPath];
     end
 end
 
@@ -129,7 +131,7 @@ function processImage(fig)
     edges(:,end-1:end) = 0;
 
     % Close gaps as much as possible
-    edges = imclose(edges, strel("disk", 20));
+    edges = imclose(edges, strel("disk", 15));
     edges = imfill(edges, "holes");
     edges = edge(edges, 'Canny');
 
