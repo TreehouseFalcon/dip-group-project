@@ -51,7 +51,7 @@ function sortedPoints = sortPoints(complexPoints)
         toBeSorted = toBeSorted(sortedIndices);
 
         if size(toBeSorted) <= 1
-            sortedPoints = [sortedPoints, toBeSorted(1)];
+            sortedPoints = [sortedPoints; toBeSorted(1)];
             break
         end
 
@@ -60,13 +60,13 @@ function sortedPoints = sortPoints(complexPoints)
         consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
         toBeSorted(1) = [];
         while consecutiveDistance < distanceThreshold & size(toBeSorted) > 1
-            connectedPath = [connectedPath, toBeSorted(1)];
+            connectedPath = [connectedPath; toBeSorted(1)];
             consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
             toBeSorted(1) = [];
         end
-        sortedPoints = [sortedPoints, connectedPath];
+        sortedPoints = [sortedPoints; connectedPath];
     end
-    sortedPoints = {sortedPoints};
+    sortedPoints = {sortedPoints, [1+1i, 100+100i, 1+100i]};
 end
 
 function processImage(fig)
@@ -99,38 +99,32 @@ function processImage(fig)
     % Sort edge pixels by finding center of mass, and sorting on angle from
     % center of mass
     complexPoints = sortPoints(complexPoints);
+    size(complexPoints)
+    for i=
+
 
     % Compute Fourier Descriptor
-    for i=1:length(complexPoints)
-        FD{i} = fft(complexPoints{i})
-    end
-
+    FD = fft(complexPoints);
+    
     % Retain Percentage of Coefficients
     pInput = getappdata(fig, 'Percentage');
     retainPercent = pInput.Value;
-
-    for i=1:length(FD)
-        numCoeffs = round(length(FD{i})* (retainPercent / 100));
-        FD{i} = fftshift(FD{i});
-        FD{i}(1:ceil((length(FD{i})-numCoeffs)/2)) = 0;
-        FD{i}(length(FD{i})-floor((length(FD{i})-numCoeffs)/2):end) = 0;
-        FD{i} = ifftshift(FD{i});
-    end
-
-        
+    numCoeffs = round(length(FD)* (retainPercent / 100));
+    FD = fftshift(FD);
+    FD(1:ceil((length(FD)-numCoeffs)/2)) = 0;
+    FD(length(FD)-floor((length(FD)-numCoeffs)/2):end) = 0;
+    FD = ifftshift(FD);
+    
     % Reconstruct boundary
-    for i=1:length(FD)
-        reconPoints{i} = ifft(FD{i});
-    end
-
+    reconPoints = ifft(FD);
+    
     % Display results
     ax = getappdata(fig, 'AxesHandle');
     cla(ax);
     imshow(grayImg, 'Parent', ax); hold(ax, 'on');
-    for i=1:length(reconPoints)
-        plot(ax, real(reconPoints{i}), imag(reconPoints{i}), 'r', 'LineWidth', 2);
-    end
-    hold(ax, 'off');    
+    plot(ax, real(reconPoints), imag(reconPoints), 'r', 'LineWidth', 2);
+    hold(ax, 'off');
+    
     setappdata(fig, 'FourierDescriptor', FD);
 end
 
