@@ -36,37 +36,78 @@ function loadImage(fig)
 end
 
 
-
 function sortedPoints = sortPoints(complexPoints)
+    % Configuration parameters. Should probably be fine left as is.
     distanceThreshold = 2;
     angleThreshold = pi;
 
     toBeSorted = complexPoints;
-    sortedPoints = [];
-    currentPath = {};
-    currentSegment = [];
+    sortedPoints = {};
 
+    
+    % While points are left to be sorted, create paths
     while size(toBeSorted) ~= 0
-        [~,sortedIndices] = sort(abs(toBeSorted - toBeSorted(1)));
-        toBeSorted = toBeSorted(sortedIndices);
+        currentPath = {};
 
-        if size(toBeSorted) <= 1
-            sortedPoints = [sortedPoints, toBeSorted(1)];
-            break
+        % While new pivot is close to previous point, create segments
+        currentSegment = [toBeSorted(1)];
+        while any(abs(toBeSorted(1) - currentSegment(end)) < distanceThreshold)
+            
+            % If theres only one point left, add it to path and break
+            if size(toBeSorted) == 1
+                currentSegment = [toBeSorted(1)];
+                toBeSorted(1) = [];
+                currentPath = [currentPath, currentSegment];
+                break
+            end
+
+            % Re-sort array based on distance to pivot
+            [~,sortedIndices] = sort(abs(toBeSorted - toBeSorted(1)));
+            toBeSorted = toBeSorted(sortedIndices);
+
+            % Initialize segment, and segment step parameters
+            currentSegment = [toBeSorted(1)];
+            consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
+            heading = angle(toBeSorted(2) - toBeSorted(1));
+            angleDiff = 0;
+            toBeSorted(1) = [];
+
+            % While next canidate point is close enough, add point to segment
+            while consecutiveDistance < distanceThreshold & angleDiff < angleThreshold & size(toBeSorted) > 1
+                currentSegment = [currentSegment, toBeSorted(1)];
+                consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
+                angleDiff = abs(heading - angle(toBeSorted(2) - toBeSorted(1)));
+                angleDiff = min(angleDiff, 2*pi - angleDiff);
+                heading = angle(toBeSorted(2) - toBeSorted(1));
+                toBeSorted(1) = [];
+            end
+
+            currentPath = [currentPath, currentSegment];
         end
 
+        % Check if end of path is close to any other segments or paths to connect
+        previousSegments = cat(2,currentPath{1:end-2});
+        previousPaths = cat(2,currentPath{1:end-2});
+        lastPointInPath = currentSegment(end);
 
-        connectedPath = [toBeSorted(1)];
-        consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
-        toBeSorted(1) = [];
-        while consecutiveDistance < distanceThreshold & size(toBeSorted) > 1
-            connectedPath = [connectedPath, toBeSorted(1)];
-            consecutiveDistance = abs(toBeSorted(2) - toBeSorted(1));
+        if any(abs(previousSegments - lastPointInPath) < distanceThreshold)
+            index = find(abs(previousSegments - lastPointInPath) < distanceThreshold);
+            index = index(1);
+            currentPath = [currentPath, previousSegments(index)];
+        elseif any(abs(previousPaths - lastPointInPath) < distanceThreshold)
+            index = find(abs(previousPaths - lastPointInPath) < distanceThreshold);
+            index = index(1);
+            currentPath = [currentPath, previousPaths(index)];
+        end
+
+        % If there is one point left, discard it, since it is not enough to
+        % create a path
+        if size(toBeSorted) == 1
             toBeSorted(1) = [];
         end
-        sortedPoints = [sortedPoints, connectedPath];
+
+        sortedPoints = [sortedPoints, cat(2,currentPath{:})];
     end
-    sortedPoints = {sortedPoints};
 end
 
 function processImage(fig)
@@ -102,7 +143,7 @@ function processImage(fig)
 
     % Compute Fourier Descriptor
     for i=1:length(complexPoints)
-        FD{i} = fft(complexPoints{i})
+        FD{i} = fft(complexPoints{i});
     end
 
     % Retain Percentage of Coefficients
